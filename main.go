@@ -4,21 +4,18 @@ import (
 	"flag"
 	"fmt"
 	"math/rand"
-	"sort"
-
-	// "math/rand"
 	"os"
 )
 
 var (
-	passLen               uint
-	alpha                 bool
-	alphaUpper            bool
-	alphaLower            bool
-	numeric               bool
-	special               bool
-	mixAll                bool
-	specialCharsASCIINumm = []uint{33, 64, 36, 35, 37, 94, 38, 42, 40, 41, 95, 43, 45, 61, 91, 93, 123, 125, 59, 58, 63, 46}
+	passLen              uint
+	alpha                bool
+	alphaUpper           bool
+	alphaLower           bool
+	numeric              bool
+	special              bool
+	mixAll               bool
+	specialCharsASCIINum = []uint{33, 35, 36, 37, 38, 40, 41, 42, 43, 45, 46, 58, 59, 61, 63, 64, 91, 93, 94, 123, 125}
 )
 
 const (
@@ -46,22 +43,9 @@ func usage() {
 	flag.PrintDefaults()
 }
 
-func contains(numbers []uint, num uint) bool {
-	for _, n := range numbers {
-		if n == num {
-			return true
-		}
-	}
-	return false
-}
-
 func appendNums(numbers *[]uint, min uint, max uint) {
 	for n := min; n <= max; n++ {
-		if !contains(*numbers, n) {
-			*numbers = append(*numbers, n)
-		} else {
-			n--
-		}
+		*numbers = append(*numbers, n)
 	}
 }
 
@@ -90,12 +74,8 @@ func getASCIINumbers() []uint {
 	}
 
 	if special {
-		appendNums(&numbers, specialCharsASCIINumm[0], specialCharsASCIINumm[(len(specialCharsASCIINumm)-1)])
+		numbers = append(numbers, specialCharsASCIINum...)
 	}
-
-	sort.Slice(numbers, func(i int, j int) bool {
-		return numbers[i] < numbers[j]
-	})
 
 	return numbers
 }
