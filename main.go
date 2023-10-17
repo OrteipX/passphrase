@@ -1,0 +1,132 @@
+package main
+
+import (
+	"flag"
+	"fmt"
+	"math/rand"
+	"sort"
+
+	// "math/rand"
+	"os"
+)
+
+var (
+	passLen               uint
+	alpha                 bool
+	alphaUpper            bool
+	alphaLower            bool
+	numeric               bool
+	special               bool
+	mixAll                bool
+	specialCharsASCIINumm = []uint{33, 64, 36, 35, 37, 94, 38, 42, 40, 41, 95, 43, 45, 61, 91, 93, 123, 125, 59, 58, 63, 46}
+)
+
+const (
+	ASCII_UPPER_START = 65  // A
+	ASCII_UPPER_END   = 90  // Z
+	ASCII_LOWER_START = 97  // a
+	ASCII_LOWER_END   = 122 // z
+	ASCII_NUM_MIN     = 48  // 0
+	ASCII_NUM_MAX     = 57  // 9
+)
+
+func init() {
+	flag.UintVar(&passLen, "l", 0, "Password Length")
+	flag.BoolVar(&alpha, "a", false, "Alphanumeric random chars")
+	flag.BoolVar(&alphaUpper, "au", false, "Alphanumeric upper case random chars [A~Z]")
+	flag.BoolVar(&alphaLower, "al", false, "Alphanumeric lower case random chars [a~z]")
+	flag.BoolVar(&numeric, "n", false, "Numeric random values [0~9]")
+	flag.BoolVar(&special, "s", false, "Special chars random chars")
+	flag.BoolVar(&mixAll, "x", false, "Mix of all types possible, alpha upper and lower, special and numbers")
+}
+
+func usage() {
+	fmt.Fprintf(os.Stderr, "Usage: %s [options]\n", os.Args[0])
+	fmt.Println("Options:")
+	flag.PrintDefaults()
+}
+
+func contains(numbers []uint, num uint) bool {
+	for _, n := range numbers {
+		if n == num {
+			return true
+		}
+	}
+	return false
+}
+
+func appendNums(numbers *[]uint, min uint, max uint) {
+	for n := min; n <= max; n++ {
+		if !contains(*numbers, n) {
+			*numbers = append(*numbers, n)
+		} else {
+			n--
+		}
+	}
+}
+
+func getASCIINumbers() []uint {
+	var numbers []uint
+
+	if mixAll {
+		alpha = true
+		numeric = true
+		special = true
+	}
+
+	if alpha {
+		appendNums(&numbers, ASCII_UPPER_START, ASCII_UPPER_END)
+		appendNums(&numbers, ASCII_LOWER_START, ASCII_LOWER_END)
+	} else {
+		if alphaUpper {
+			appendNums(&numbers, ASCII_UPPER_START, ASCII_UPPER_END)
+		} else if alphaLower {
+			appendNums(&numbers, ASCII_LOWER_START, ASCII_LOWER_END)
+		}
+	}
+
+	if numeric {
+		appendNums(&numbers, ASCII_NUM_MIN, ASCII_NUM_MAX)
+	}
+
+	if special {
+		appendNums(&numbers, specialCharsASCIINumm[0], specialCharsASCIINumm[(len(specialCharsASCIINumm)-1)])
+	}
+
+	sort.Slice(numbers, func(i int, j int) bool {
+		return numbers[i] < numbers[j]
+	})
+
+	return numbers
+}
+
+func getRandomNum(numbers []uint) uint {
+	randNum := rand.Intn(len(numbers))
+
+	return numbers[randNum]
+}
+
+func generatePassword() string {
+	possibleNumbers := getASCIINumbers()
+
+	var password string
+
+	for i := uint(0); i < passLen; i++ {
+		c := rune(getRandomNum(possibleNumbers))
+		password += string(c)
+	}
+
+	return password
+}
+
+func main() {
+	flag.Usage = usage
+	flag.Parse()
+
+	if passLen == 0 || (passLen > 0 && !alpha && !alphaUpper && !alphaLower && !numeric && !special && !mixAll) {
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	fmt.Println(generatePassword())
+}
