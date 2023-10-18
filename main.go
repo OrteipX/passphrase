@@ -29,16 +29,16 @@ const (
 
 func init() {
 	flag.UintVar(&passLen, "l", 0, "Password Length")
-	flag.BoolVar(&alpha, "a", false, "Alphanumeric random chars")
-	flag.BoolVar(&alphaUpper, "au", false, "Alphanumeric upper case random chars [A~Z]")
-	flag.BoolVar(&alphaLower, "al", false, "Alphanumeric lower case random chars [a~z]")
-	flag.BoolVar(&numeric, "n", false, "Numeric random values [0~9]")
-	flag.BoolVar(&special, "s", false, "Special chars random chars")
-	flag.BoolVar(&mixAll, "x", false, "Mix of all types possible, alpha upper and lower, special and numbers")
+	flag.BoolVar(&alpha, "a", false, "Include alphanumeric random chars (e.g.: [A-Za-z]")
+	flag.BoolVar(&alphaUpper, "au", false, "Include alphanumeric upper case random chars (e.g.: [A~Z])")
+	flag.BoolVar(&alphaLower, "al", false, "Include alphanumeric lower case random chars (e.g.: [a~z])")
+	flag.BoolVar(&numeric, "n", false, "Include numeric random values (e.g.: [0-9])")
+	flag.BoolVar(&special, "s", false, "Include special chars random chars")
+	flag.BoolVar(&mixAll, "x", false, "Include a mix of all types possible, alpha uppercase, alpha lowercase, special and numbers")
 }
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "Usage: %s [options]\n", os.Args[0])
+	fmt.Fprintf(os.Stderr, "Usage: %s -l [len] [options]\n", os.Args[0])
 	fmt.Println("Options:")
 	flag.PrintDefaults()
 }
