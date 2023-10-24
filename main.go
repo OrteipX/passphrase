@@ -33,7 +33,7 @@ func init() {
 	flag.BoolVar(&alphaUpper, "au", false, "Include alphanumeric upper case random chars (e.g.: [A~Z])")
 	flag.BoolVar(&alphaLower, "al", false, "Include alphanumeric lower case random chars (e.g.: [a~z])")
 	flag.BoolVar(&numeric, "n", false, "Include numeric random values (e.g.: [0-9])")
-	flag.BoolVar(&special, "s", false, "Include special chars random chars")
+	flag.BoolVar(&special, "s", false, "Include special random chars")
 	flag.BoolVar(&mixAll, "x", false, "Include a mix of all types possible, alpha uppercase, alpha lowercase, special and numbers")
 }
 
