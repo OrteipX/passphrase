@@ -1,40 +1,37 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"math/rand"
 	"os"
+	"time"
 )
 
 var (
-	passLen              uint
-	alpha                bool
-	alphaUpper           bool
-	alphaLower           bool
-	numeric              bool
-	special              bool
-	mixAll               bool
-	specialCharsASCIINum = []uint{33, 35, 36, 37, 38, 40, 41, 42, 43, 45, 46, 58, 59, 61, 63, 64, 91, 93, 94, 123, 125}
-)
+	passLen    uint
+	alpha      bool
+	alphaUpper bool
+	alphaLower bool
+	numeric    bool
+	special    bool
+	mixAll     bool
 
-const (
-	ASCII_UPPER_START = 65  // A
-	ASCII_UPPER_END   = 90  // Z
-	ASCII_LOWER_START = 97  // a
-	ASCII_LOWER_END   = 122 // z
-	ASCII_NUM_MIN     = 48  // 0
-	ASCII_NUM_MAX     = 57  // 9
+	alphaUpperChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	alphaLowerChars = "abcdefghijklmnopqrstuvwxyz"
+	numericChars    = "0123456789"
+	specialChars    = "!#$%&()*+-.:;=?@[]^{}"
 )
 
 func init() {
 	flag.UintVar(&passLen, "l", 0, "Password Length")
-	flag.BoolVar(&alpha, "a", false, "Include alphanumeric random chars (e.g.: [A-Za-z]")
-	flag.BoolVar(&alphaUpper, "au", false, "Include alphanumeric upper case random chars (e.g.: [A~Z])")
-	flag.BoolVar(&alphaLower, "al", false, "Include alphanumeric lower case random chars (e.g.: [a~z])")
-	flag.BoolVar(&numeric, "n", false, "Include numeric random values (e.g.: [0-9])")
-	flag.BoolVar(&special, "s", false, "Include special chars random chars")
-	flag.BoolVar(&mixAll, "x", false, "Include a mix of all types possible, alpha uppercase, alpha lowercase, special and numbers")
+	flag.BoolVar(&alpha, "a", false, "Include alphanumeric random chars (e.g.: [A-Za-z])")
+	flag.BoolVar(&alphaUpper, "au", false, "Include alphanumeric uppercase chars (e.g.: [A-Z])")
+	flag.BoolVar(&alphaLower, "al", false, "Include alphanumeric lowercase chars (e.g.: [a-z])")
+	flag.BoolVar(&numeric, "n", false, "Include numeric chars (e.g.: [0-9])")
+	flag.BoolVar(&special, "s", false, "Include special characters")
+	flag.BoolVar(&mixAll, "x", false, "Include a mix of all types (alpha, numeric, special)")
 }
 
 func usage() {
@@ -43,70 +40,55 @@ func usage() {
 	flag.PrintDefaults()
 }
 
-func appendNums(numbers *[]uint, min uint, max uint) {
-	for n := min; n <= max; n++ {
-		*numbers = append(*numbers, n)
-	}
-}
-
-func getASCIINumbers() []uint {
-	var numbers []uint
+func generatePassword() string {
+	var possibleChars string
 
 	if mixAll {
-		alpha = true
-		numeric = true
-		special = true
-	}
-
-	if alpha {
-		appendNums(&numbers, ASCII_UPPER_START, ASCII_UPPER_END)
-		appendNums(&numbers, ASCII_LOWER_START, ASCII_LOWER_END)
+		possibleChars = alphaUpperChars + alphaLowerChars + numericChars + specialChars
 	} else {
-		if alphaUpper {
-			appendNums(&numbers, ASCII_UPPER_START, ASCII_UPPER_END)
-		} else if alphaLower {
-			appendNums(&numbers, ASCII_LOWER_START, ASCII_LOWER_END)
+		if alpha {
+			possibleChars += alphaUpperChars + alphaLowerChars
+		} else {
+			if alphaUpper {
+				possibleChars += alphaUpperChars
+			}
+			if alphaLower {
+				possibleChars += alphaLowerChars
+			}
+		}
+		if numeric {
+			possibleChars += numericChars
+		}
+		if special {
+			possibleChars += specialChars
 		}
 	}
 
-	if numeric {
-		appendNums(&numbers, ASCII_NUM_MIN, ASCII_NUM_MAX)
+	if len(possibleChars) == 0 {
+		fmt.Println("No valid character sets chosen for password generation.")
+		os.Exit(1)
 	}
 
-	if special {
-		numbers = append(numbers, specialCharsASCIINum...)
-	}
-
-	return numbers
-}
-
-func getRandomNum(numbers []uint) uint {
-	randNum := rand.Intn(len(numbers))
-
-	return numbers[randNum]
-}
-
-func generatePassword() string {
-	possibleNumbers := getASCIINumbers()
-
-	var password string
+	var password bytes.Buffer
 
 	for i := uint(0); i < passLen; i++ {
-		c := rune(getRandomNum(possibleNumbers))
-		password += string(c)
+		c := possibleChars[rand.Intn(len(possibleChars))]
+		password.WriteByte(c)
 	}
 
-	return password
+	return password.String()
 }
 
 func main() {
 	flag.Usage = usage
 	flag.Parse()
 
-	if passLen == 0 || (passLen > 0 && !alpha && !alphaUpper && !alphaLower && !numeric && !special && !mixAll) {
+	if passLen == 0 || (!alpha && !alphaUpper && !alphaLower && !numeric && !special && !mixAll) {
 		flag.Usage()
 		os.Exit(1)
 	}
+
+	rand.Seed(time.Now().UnixNano())
 
 	fmt.Println(generatePassword())
 }
