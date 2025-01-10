@@ -40,7 +40,7 @@ func usage() {
 	flag.PrintDefaults()
 }
 
-func generatePassword() string {
+func generatePassword(r *rand.Rand) string {
 	var possibleChars string
 
 	if mixAll {
@@ -72,7 +72,7 @@ func generatePassword() string {
 	var password bytes.Buffer
 
 	for i := uint(0); i < passLen; i++ {
-		c := possibleChars[rand.Intn(len(possibleChars))]
+		c := possibleChars[r.Intn(len(possibleChars))]
 		password.WriteByte(c)
 	}
 
@@ -88,7 +88,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	rand.Seed(time.Now().UnixNano())
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	fmt.Println(generatePassword())
+	fmt.Println(generatePassword(r))
 }
