@@ -9,6 +9,13 @@ import (
 	"time"
 )
 
+const (
+	alphaUpperChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	alphaLowerChars = "abcdefghijklmnopqrstuvwxyz"
+	numericChars    = "0123456789"
+	specialChars    = "!#$%&()*+-.:;=?@[]^{}"
+)
+
 var (
 	passLen    uint
 	alpha      bool
@@ -17,11 +24,6 @@ var (
 	numeric    bool
 	special    bool
 	mixAll     bool
-
-	alphaUpperChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	alphaLowerChars = "abcdefghijklmnopqrstuvwxyz"
-	numericChars    = "0123456789"
-	specialChars    = "!#$%&()*+-.:;=?@[]^{}"
 )
 
 func init() {
