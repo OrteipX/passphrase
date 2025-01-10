@@ -42,7 +42,11 @@ func usage() {
 	flag.PrintDefaults()
 }
 
-func generatePassword(r *rand.Rand) string {
+type Password struct {
+	rand *rand.Rand
+}
+
+func (p Password) generate() string {
 	var possibleChars string
 
 	if mixAll {
@@ -68,13 +72,15 @@ func generatePassword(r *rand.Rand) string {
 
 	if len(possibleChars) == 0 {
 		fmt.Println("No valid character sets chosen for password generation.")
+
 		os.Exit(1)
 	}
 
 	var password bytes.Buffer
 
 	for i := uint(0); i < passLen; i++ {
-		c := possibleChars[r.Intn(len(possibleChars))]
+		c := possibleChars[p.rand.Intn(len(possibleChars))]
+
 		password.WriteByte(c)
 	}
 
@@ -92,5 +98,7 @@ func main() {
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	fmt.Println(generatePassword(r))
+	password := Password{r}
+
+	fmt.Println(password.generate())
 }
