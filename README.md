@@ -9,7 +9,7 @@ A simple command-line tool written in Go for generating random passwords with cu
   - Uppercase letters (`A-Z`)
   - Lowercase letters (`a-z`)
   - Numbers (`0-9`)
-  - Special characters (`!#$%&()*+-.:;=?@[]^{}`
+  - Special characters (`!#$%&()*+-=?@[]^{}`
 - Quick option to include a mix of all character types.
 - Easy-to-use command-line interface.
 
@@ -53,6 +53,8 @@ passgen -l [length] [options]
   -n: Include numeric characters (0-9).
   -s: Include special characters (!#$%&()*+-.:;=?@[]^{}).
   -x: Include a mix of all character types (equivalent to -au -al -n -s).
+  -e: Exclude the specified characters.
+  -i: Include only the specified characters.
   ```
 
 ### Examples

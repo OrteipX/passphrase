@@ -39,7 +39,6 @@ func init() {
 	flag.BoolVar(&mixAll, "x", false, "Include a mix of all types (alpha, numeric, special)")
 	flag.StringVar(&exclude, "e", "", "Exclude characters from the password gen")
 	flag.StringVar(&includeOnly, "i", "", "Include only the characters to the password gen")
-	flag.StringVar(&includeOnly, "i", "", "Include only the characters to the password gen")
 }
 
 func usage() {
