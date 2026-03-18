@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -13,17 +14,19 @@ const (
 	alphaUpperChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	alphaLowerChars = "abcdefghijklmnopqrstuvwxyz"
 	numericChars    = "0123456789"
-	specialChars    = "!#$%&()*+-.:;=?@[]^{}"
+	specialChars    = "!#$%&()*+-=?@[]^{}"
 )
 
 var (
-	passLen    uint
-	alpha      bool
-	alphaUpper bool
-	alphaLower bool
-	numeric    bool
-	special    bool
-	mixAll     bool
+	passLen     uint
+	alpha       bool
+	alphaUpper  bool
+	alphaLower  bool
+	numeric     bool
+	special     bool
+	mixAll      bool
+	exclude     string
+	includeOnly string
 )
 
 func init() {
@@ -34,6 +37,9 @@ func init() {
 	flag.BoolVar(&numeric, "n", false, "Include numeric chars (e.g.: [0-9])")
 	flag.BoolVar(&special, "s", false, "Include special characters")
 	flag.BoolVar(&mixAll, "x", false, "Include a mix of all types (alpha, numeric, special)")
+	flag.StringVar(&exclude, "e", "", "Exclude characters from the password gen")
+	flag.StringVar(&includeOnly, "i", "", "Include only the characters to the password gen")
+	flag.StringVar(&includeOnly, "i", "", "Include only the characters to the password gen")
 }
 
 func usage() {
@@ -46,27 +52,59 @@ type Password struct {
 	rand *rand.Rand
 }
 
+func (p Password) removeIgnoredChars(base, ignore string) string {
+	if ignore == "" {
+		return base
+	}
+
+	ignoreSet := make(map[rune]struct{}, len(ignore))
+
+	for _, c := range ignore {
+		ignoreSet[c] = struct{}{}
+	}
+
+	var builder strings.Builder
+
+	builder.Grow(len(base))
+
+	for _, c := range base {
+		if _, exists := ignoreSet[c]; !exists {
+			builder.WriteRune(c)
+		}
+	}
+
+	return builder.String()
+}
+
 func (p Password) generate() string {
 	var possibleChars string
 
-	if mixAll {
-		possibleChars = alphaUpperChars + alphaLowerChars + numericChars + specialChars
+	if includeOnly != "" {
+		possibleChars = includeOnly
 	} else {
-		if alpha {
-			possibleChars += alphaUpperChars + alphaLowerChars
+		if mixAll {
+			possibleChars = alphaUpperChars + alphaLowerChars + numericChars + specialChars
 		} else {
-			if alphaUpper {
-				possibleChars += alphaUpperChars
+			if alpha {
+				possibleChars += alphaUpperChars + alphaLowerChars
+			} else {
+				if alphaUpper {
+					possibleChars += alphaUpperChars
+				}
+				if alphaLower {
+					possibleChars += alphaLowerChars
+				}
 			}
-			if alphaLower {
-				possibleChars += alphaLowerChars
+			if numeric {
+				possibleChars += numericChars
+			}
+			if special {
+				possibleChars += specialChars
 			}
 		}
-		if numeric {
-			possibleChars += numericChars
-		}
-		if special {
-			possibleChars += specialChars
+
+		if exclude != "" {
+			possibleChars = p.removeIgnoredChars(possibleChars, exclude)
 		}
 	}
 
@@ -89,10 +127,12 @@ func (p Password) generate() string {
 
 func main() {
 	flag.Usage = usage
+
 	flag.Parse()
 
-	if passLen == 0 || (!alpha && !alphaUpper && !alphaLower && !numeric && !special && !mixAll) {
+	if passLen == 0 || (includeOnly == "" && !alpha && !alphaUpper && !alphaLower && !numeric && !special && !mixAll) {
 		flag.Usage()
+
 		os.Exit(1)
 	}
 
